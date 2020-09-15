@@ -52,6 +52,15 @@ abstract class Task
     }
 
     /**
+     * 下一次执行
+     * @return bool
+     */
+    public function NextRun($datatime=null)
+    {
+        return CronExpression::factory($this->expression)->getNextRunDate($datatime)->format('Y-m-d H:i:s');
+    }
+
+    /**
      * 配置任务
      */
     protected function configure()
