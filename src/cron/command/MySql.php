@@ -16,7 +16,6 @@ class MySql extends Command
 
     protected function configure()
     {
-        $this->config = $this->app->config->get('cron');
         $this->setName('cron:install')->setDescription('Crontab Data table initialization');
     }
 
@@ -38,6 +37,7 @@ class MySql extends Command
 
     protected function initialize(Input $input, Output $output)
     {
+        $this->config = $this->app->config->get('cron');
         $this->sql = <<<sql
 CREATE TABLE `{$this->config['table']}` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
