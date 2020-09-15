@@ -1,0 +1,32 @@
+{
+    "name": "yzh52521/thinkphp-cron",
+    "description": "thinkphp 计划任务",
+    "license": "Apache-2.0",
+    "authors": [
+        {
+            "name": "yzh52521",
+            "email": "396751927@qq.com"
+        }
+    ],
+    "require": {
+        "topthink/framework": "^6.0",
+        "dragonmantank/cron-expression": "^3.0",
+        "symfony/process": "^4.4",
+        "nesbot/carbon": "^2.28"
+    },
+    "autoload": {
+        "psr-4": {
+            "yzh52521\\cron\\": "src/cron"
+        }
+    },
+    "extra": {
+        "think": {
+            "config": {
+                "cron": "src/config.php"
+            },
+            "services": [
+                "yzh52521\\cron\\Service"
+            ]
+        }
+    }
+}
