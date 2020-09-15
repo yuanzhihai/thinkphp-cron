@@ -39,7 +39,7 @@ class MySql extends Command
     {
         $this->config = $this->app->config->get('cron');
         $this->sql = <<<sql
-CREATE TABLE `{$this->config['table']}` (
+CREATE TABLE `{Config::get('cron.table')}` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `sort` int(11) NOT NULL DEFAULT '0' COMMENT '排序',
   `count` int(11) NOT NULL DEFAULT '0' COMMENT '执行次数',
