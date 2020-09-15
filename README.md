@@ -41,12 +41,57 @@ class DemoTask extends Task
 
 ```
 return [
-    'tasks' => [
-        \app\task\DemoTask::class, //任务的完整类名
-    ]
+    return [
+        'type'  =>    'file',       //支持 file,mysql驱动
+        'table' =>    'think_cron', //驱动类型为mysql时存储任务所用的表
+        'cache' => 60,             //为数据库驱动时 查询缓存时间，为减数据库查询压力
+        'tasks'   => [             //为文件存储时定时任务列表格式
+            'demo'  =>[
+                'title'     =>  '测试',
+                'task'      =>  \app\task\DemoTask::class,
+                'data'      =>  [],
+                'expression'       =>  '* * * * *'
+            ]
+        ]
+    ];
 ];
 ```
-
+```
+使用mysql存储定时任务时，请将 type 设置为 mysql，然后控制台执行 php think xcron:install 初始化数据库，或者手动创建如下数据表
+```
+CREATE TABLE `think_cron` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `status` int(1) NOT NULL DEFAULT '1' COMMENT '任务状态',
+  `count` int(11) NOT NULL DEFAULT '0' COMMENT '执行次数',
+  `title` char(50) DEFAULT NULL COMMENT '任务名称',
+  `expression` char(200) NOT NULL DEFAULT '* * * * *' COMMENT '任务周期',
+  `task` varchar(500) DEFAULT NULL COMMENT '任务命令',
+  `data` longtext COMMENT '附加参数',
+  `status_desc` varchar(1000) DEFAULT NULL COMMENT '上次执行结果',
+  `last_time` datetime DEFAULT NULL COMMENT '最后执行时间',
+  `next_time` datetime DEFAULT NULL COMMENT '下次执行时间',
+  `create_time` int(11) DEFAULT NULL COMMENT '创建时间',
+  `update_time` int(11) DEFAULT NULL COMMENT '更新时间',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+```
+### 创建计划任务
+```
+/**
+ * 添加到计划任务
+ * @param string $title 任务名
+ * @param string $task  类名
+ * @param array $data   参数 数组格式
+ * @param string $expression 任务执行周期,使用标准的Crontab语法,默认60秒
+ * @return bool
+ */
+ add_cron($title, $task, $data = [], $expression=null);
+```
+### 创建计划任务例子
+```
+$data = ['name' => 'thinkphp'];
+add_cron('test', \app\task\DemoTask::class, $data, '*/5 * * * *');
+```
 ### 任务监听
 
 #### 两种方法：
@@ -83,4 +128,4 @@ stdout_logfile=/root/supervisor.log ;stdout文件
 
 ## 写在最后
 - 代码中有很多不成熟的地方，期待您的issue。最好能fork，将您的想法贡献出来。让这个项目更适应更多的场景。
-- 邮箱：396751827@qq.com
+- 邮箱：396751927@qq.com
