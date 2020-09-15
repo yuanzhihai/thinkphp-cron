@@ -1,6 +1,6 @@
 <?php
 
-namespace yunwuxin\cron;
+namespace yzh52521\cron;
 
 use Carbon\Carbon;
 use DateTimeZone;
