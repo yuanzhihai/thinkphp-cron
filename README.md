@@ -83,4 +83,4 @@ stdout_logfile=/root/supervisor.log ;stdout文件
 
 ## 写在最后
 - 代码中有很多不成熟的地方，期待您的issue。最好能fork，将您的想法贡献出来。让这个项目更适应更多的场景。
-- 邮箱：i@shabi.in
+- 邮箱：396751827@qq.com
