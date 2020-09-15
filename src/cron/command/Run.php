@@ -3,8 +3,6 @@
 namespace yzh52521\cron\command;
 
 use Carbon\Carbon;
-use think\facade\Cache;
-use think\facade\Config;
 use think\console\Command;
 use think\console\Input;
 use think\console\input\Option;
@@ -23,12 +21,16 @@ class Run extends Command
 
     protected $taskData = [];
 
+    protected function initialize(Input $input, Output $output)
+    {
+        $this->config = $this->app->config->get('cron');
+        $this->type   = strtolower($this->config['type']);
+        $this->startedAt = Carbon::now();
+    }
 
     protected function configure()
     {
-        $this->startedAt = Carbon::now();
-        $this->config = $this->app->config->get('cron');
-        $this->type   = strtolower($this->config['type']);
+
         $this->setName('cron:run')
             ->addOption('memory', null, Option::VALUE_OPTIONAL, 'The memory limit in megabytes', 128)
             ->setDescription('Running a scheduled task');
