@@ -2,6 +2,7 @@
 
 namespace yzh52521\cron\command;
 
+use Carbon\Carbon;
 use think\facade\Cache;
 use think\facade\Config;
 use think\console\Command;
@@ -25,7 +26,9 @@ class Run extends Command
 
     protected function configure()
     {
-        $this->startedAt = date('Y-m-d H:i:s');
+        $this->startedAt = Carbon::now();
+        $this->config = $this->app->config->get('cron');
+        $this->type   = strtolower($this->config['type']);
         $this->setName('cron:run')
             ->addOption('memory', null, Option::VALUE_OPTIONAL, 'The memory limit in megabytes', 128)
             ->setDescription('Running a scheduled task');
@@ -81,11 +84,6 @@ class Run extends Command
         }
     }
 
-    protected function initialize(Input $input, Output $output)
-    {
-        $this->config = $this->app->config->get('cron');
-        $this->type   = strtolower($this->config['type']);
-    }
 
     protected function tasksSql($time = 60)
     {
@@ -105,11 +103,11 @@ class Run extends Command
      */
     protected function serverShouldRun($task)
     {
-        $key = $task->mutexName() . $this->startedAt;
-        if (Cache::has($key)) {
+        $key = $task->mutexName() . $this->startedAt->format('H:i');
+        if ($this->app->cache->has($key)) {
             return false;
         }
-        Cache::set($key, true, 60);
+        $this->app->cache->set($key, true, 60);
         return true;
     }
 
@@ -137,7 +135,7 @@ class Run extends Command
         if ($this->type == 'mysql') {
             Db::table($this->config['table'])->update($this->taskData);
         }else{
-            Cache::set('cron-'.$this->taskData['id'], $this->taskData, 0);
+            $this->app->cache->set('cron-'.$this->taskData['id'], $this->taskData, 0);
         }
     }
 }
