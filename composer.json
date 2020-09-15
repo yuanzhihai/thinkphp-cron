@@ -17,7 +17,10 @@
     "autoload": {
         "psr-4": {
             "yzh52521\\cron\\": "src/cron"
-        }
+        },
+        "files": [
+            "src/helper.php"
+        ]
     },
     "extra": {
         "think": {
