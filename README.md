@@ -57,7 +57,7 @@ return [
 ];
 ```
 ```
-使用mysql存储定时任务时，请将 type 设置为 mysql，然后控制台执行 php think xcron:install 初始化数据库，或者手动创建如下数据表
+使用mysql存储定时任务时，请将 type 设置为 mysql，然后控制台执行 php think cron:install 初始化数据库，或者手动创建如下数据表
 ```
 ```
 CREATE TABLE `think_cron` (
