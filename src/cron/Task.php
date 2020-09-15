@@ -34,10 +34,14 @@ abstract class Task
     /** @var Cache */
     protected $cache;
 
-    public function __construct(Cache $cache)
+    public function __construct($expression=false,Cache $cache)
     {
         $this->cache = $cache;
-        $this->configure();
+        if($expression){
+            $this->expression=$expression;
+        }else {
+            $this->configure();
+        }
     }
 
     /**
