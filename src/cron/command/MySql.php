@@ -5,6 +5,7 @@ namespace yzh52521\cron\command;
 use think\console\Command;
 use think\console\Input;
 use think\console\Output;
+use think\facade\Config;
 use think\facade\Db;
 
 class MySql extends Command
@@ -59,7 +60,7 @@ sql;
 
     public function add_cron($title, $task, $data = [], $expression = null)
     {
-        return Db::table($this->config['table'])->insert(
+        return Db::table(Config::get('cron.table'))->insert(
             [
                 'title'       => $title,
                 'task'        => $task,
