@@ -30,6 +30,11 @@ abstract class Task
 
     protected $filters = [];
     protected $rejects = [];
+    //@var array 附加参数
+    public $payload = [];
+
+    //@var string 任务处理结果
+    public $statusDesc = null;
 
     /** @var Cache */
     protected $cache;
