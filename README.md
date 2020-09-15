@@ -78,3 +78,9 @@ stdout_logfile=/root/supervisor.log ;stdout文件
 ~~~
 * * * * * php /path/to/think cron:run >> /dev/null 2>&1
 ~~~
+## 特别鸣谢
+- 使用了[yunwuxin/think-cron](https://packagist.org/packages/yunwuxin/think-cron/ "创建自定义指令")项目中的部分代码
+
+## 写在最后
+- 代码中有很多不成熟的地方，期待您的issue。最好能fork，将您的想法贡献出来。让这个项目更适应更多的场景。
+- 邮箱：i@shabi.in
