@@ -46,13 +46,101 @@ trait ManagesFrequencies
 
     private function inTimeInterval($startTime, $endTime)
     {
-        return function () use ($startTime, $endTime) {
-            return Carbon::now($this->timezone)->between(
-                Carbon::parse($startTime, $this->timezone),
-                Carbon::parse($endTime, $this->timezone),
-                true
-            );
+        [$now, $startTime, $endTime] = [
+            Carbon::now($this->timezone),
+            Carbon::parse($startTime, $this->timezone),
+            Carbon::parse($endTime, $this->timezone),
+        ];
+
+        if ($endTime->lessThan($startTime)) {
+            if ($startTime->greaterThan($now)) {
+                $startTime->subDay(1);
+            } else {
+                $endTime->addDay(1);
+            }
+        }
+
+        return function () use ($now, $startTime, $endTime) {
+            return $now->between($startTime, $endTime);
         };
+    }
+
+    /**
+     * 每分钟执行
+     *
+     * @return $this
+     */
+    public function everyMinute()
+    {
+        return $this->spliceIntoPosition(1, '*');
+    }
+
+    /**
+     * 每两分钟执行
+     *
+     * @return $this
+     */
+    public function everyTwoMinutes()
+    {
+        return $this->spliceIntoPosition(1, '*/2');
+    }
+
+    /**
+     * 每三分钟执行
+     *
+     * @return $this
+     */
+    public function everyThreeMinutes()
+    {
+        return $this->spliceIntoPosition(1, '*/3');
+    }
+
+    /**
+     * 每四分钟执行
+     *
+     * @return $this
+     */
+    public function everyFourMinutes()
+    {
+        return $this->spliceIntoPosition(1, '*/4');
+    }
+    /**
+     * 每5分钟执行
+     *
+     * @return $this
+     */
+    public function everyFiveMinutes()
+    {
+        return $this->spliceIntoPosition(1, '*/5');
+    }
+
+    /**
+     * 每10分钟执行
+     *
+     * @return $this
+     */
+    public function everyTenMinutes()
+    {
+        return $this->spliceIntoPosition(1, '*/10');
+    }
+    /**
+     * 每十五分钟执行
+     *
+     * @return $this
+     */
+    public function everyFifteenMinutes()
+    {
+        return $this->spliceIntoPosition(1, '*/15');
+    }
+
+    /**
+     * 每30分钟执行
+     *
+     * @return $this
+     */
+    public function everyThirtyMinutes()
+    {
+        return $this->spliceIntoPosition(1, '0,30');
     }
 
     /**
@@ -74,6 +162,49 @@ trait ManagesFrequencies
     public function hourlyAt($offset)
     {
         return $this->spliceIntoPosition(1, $offset);
+    }
+
+    /**
+     * 每两小时执行
+     *
+     * @return $this
+     */
+    public function everyTwoHours()
+    {
+        return $this->spliceIntoPosition(1, 0)
+            ->spliceIntoPosition(2, '*/2');
+    }
+
+    /**
+     * 每三小时执行
+     *
+     * @return $this
+     */
+    public function everyThreeHours()
+    {
+        return $this->spliceIntoPosition(1, 0)
+            ->spliceIntoPosition(2, '*/3');
+    }
+    /**
+     * 每四小时执行
+     *
+     * @return $this
+     */
+    public function everyFourHours()
+    {
+        return $this->spliceIntoPosition(1, 0)
+            ->spliceIntoPosition(2, '*/4');
+    }
+
+    /**
+     * 每六小时执行
+     *
+     * @return $this
+     */
+    public function everySixHours()
+    {
+        return $this->spliceIntoPosition(1, 0)
+            ->spliceIntoPosition(2, '*/6');
     }
 
     /**
@@ -276,13 +407,26 @@ trait ManagesFrequencies
      * @param int $second
      * @return $this
      */
-    public function twiceMonthly($first = 1, $second = 16)
+    public function twiceMonthly($first = 1, $second = 16,$time='0:0')
     {
         $days = $first . ',' . $second;
 
-        return $this->spliceIntoPosition(1, 0)
-            ->spliceIntoPosition(2, 0)
-            ->spliceIntoPosition(3, $days);
+        $this->dailyAt($time);
+
+        return $this->spliceIntoPosition(3, $days);
+    }
+
+    /**
+     * 每月最后一天几点执行
+     *
+     * @param  string  $time
+     * @return $this
+     */
+    public function lastDayOfMonth($time = '0:0')
+    {
+        $this->dailyAt($time);
+
+        return $this->spliceIntoPosition(3, Carbon::now()->endOfMonth()->day);
     }
 
     /**
@@ -295,7 +439,7 @@ trait ManagesFrequencies
         return $this->spliceIntoPosition(1, 0)
             ->spliceIntoPosition(2, 0)
             ->spliceIntoPosition(3, 1)
-            ->spliceIntoPosition(4, '*/3');
+            ->spliceIntoPosition(4, '1-12/3');
     }
 
     /**
@@ -312,44 +456,21 @@ trait ManagesFrequencies
     }
 
     /**
-     * 每分钟执行
+     * 按年设置月日时间执行
      *
+     * @param  int  $month
+     * @param  int|string  $dayOfMonth
+     * @param  string  $time
      * @return $this
      */
-    public function everyMinute()
+    public function yearlyOn($month = 1, $dayOfMonth = 1, $time = '0:0')
     {
-        return $this->spliceIntoPosition(1, '*');
+        $this->dailyAt($time);
+
+        return $this->spliceIntoPosition(3, $dayOfMonth)
+            ->spliceIntoPosition(4, $month);
     }
 
-    /**
-     * 每5分钟执行
-     *
-     * @return $this
-     */
-    public function everyFiveMinutes()
-    {
-        return $this->spliceIntoPosition(1, '*/5');
-    }
-
-    /**
-     * 每10分钟执行
-     *
-     * @return $this
-     */
-    public function everyTenMinutes()
-    {
-        return $this->spliceIntoPosition(1, '*/10');
-    }
-
-    /**
-     * 每30分钟执行
-     *
-     * @return $this
-     */
-    public function everyThirtyMinutes()
-    {
-        return $this->spliceIntoPosition(1, '0,30');
-    }
 
     /**
      * 按周设置天执行
