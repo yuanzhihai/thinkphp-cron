@@ -138,7 +138,7 @@ class Schedule extends Command
                                 ], function ($value) {
             return !is_null($value);
         });
-        return new Process((array)implode(" ", $command), null, null, null, null);
+        return  Process::fromShellCommandline(implode(" ", $command));
     }
 
     /**
