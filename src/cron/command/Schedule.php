@@ -1,4 +1,5 @@
 <?php
+
 namespace yzh52521\cron\command;
 
 use think\console\Command;
@@ -13,10 +14,11 @@ class Schedule extends Command
 {
     protected $daemon = false;
     protected $memory = 128;
+
     protected function configure()
     {
         $this->setName('cron:schedule')
-            ->addArgument('action', Argument::OPTIONAL, "Run command",false)
+            ->addArgument('action', Argument::OPTIONAL, "Run command", false)
             ->addOption('memory', null, Option::VALUE_OPTIONAL, 'The memory limit in megabytes', 128)
             ->addOption('daemon', null, Option::VALUE_NONE, 'Run the worker in daemon mode')
             ->setDescription('Daemon running crontab tasks');
@@ -24,17 +26,16 @@ class Schedule extends Command
 
     protected function execute(Input $input, Output $output)
     {
-        $action = $input->getArgument('action');
+        $action       = $input->getArgument('action');
         $this->memory = $input->getOption('memory');
 
         if ($input->getOption('daemon')) {
             $this->daemon = true;
         }
         $this->output = $output;
-        switch ($action)
-        {
+        switch ($action) {
             case "start":
-                $this->runProcess($this->memory);
+                $this->runProcess();
                 break;
             case "stop":
                 $this->stopProcess();
@@ -51,37 +52,36 @@ class Schedule extends Command
     }
 
     /**
-     * @param  \Symfony\Component\Process\Process $process
-     * @param  int           $memory
+     * @return bool
      */
     protected function runProcess()
     {
-        if($this->daemon){
+        if ($this->daemon) {
             $this->output->writeln("<info>Crontab is started successfully</info>");
-            $process = $this->makeProcess($this->getName(),'start',$this->memory,"&");
+            $process = $this->makeProcess($this->getName(), 'start', $this->memory, "&");
             $process->start();
-            if($process->isRunning()){
+            if ($process->isRunning()) {
                 return true;
             }
             return false;
-        }else{
-            if ($pid=$this->getCronStatus()) {
-                $this->output->info("Crontab daemon {$pid} is runing.");
+        }
+
+        if ($pid = $this->getCronStatus()) {
+            $this->output->info("Crontab daemon {$pid} is runing.");
+            $this->stop();
+        }
+        $this->output->writeln("<info>Crontab is started successfully</info>");
+        $process = $this->makeProcess();
+        while (true) {
+            $process->start();
+            if ($this->memoryExceeded($this->memory)) {
                 $this->stop();
             }
-            $this->output->writeln("<info>Crontab is started successfully</info>");
-            $process = $this->makeProcess();
-            while (true) {
-                $process->start();
-                if ($this->memoryExceeded($this->memory)) {
-                    $this->stop();
-                }
-                if($process->isRunning()){
-                    $this->app->cache->set($this->getName(), $this->checkProcess(),60);
-                }
-                $process->wait();
-                sleep(60);
+            if ($process->isRunning()) {
+                $this->app->cache->set($this->getName(), $this->checkProcess(), 60);
             }
+            $process->wait();
+            sleep(60);
         }
     }
 
@@ -118,26 +118,27 @@ class Schedule extends Command
             $this->output->error('Crontab daemon creation failed, try again later!');
         }
     }
+
     /**
      * @param string $task
      * @param string $connector
-     * @param int    $memory
-     * @param int    $timeout
+     * @param int $memory
+     * @param int $timeout
      * @return Process
      */
-    protected function makeProcess($task='cron:run',$connector=null, $memory = 128,$daemon=null)
+    protected function makeProcess($task = 'cron:run', $connector = null, $memory = 128, $daemon = null)
     {
         $command = array_filter([
-            PHP_BINARY,
-            'think',
-            $task,
-            $connector,
-            "--memory={$memory}",
-            $daemon,
-        ], function ($value) {
+                                    PHP_BINARY,
+                                    'think',
+                                    $task,
+                                    $connector,
+                                    "--memory={$memory}",
+                                    $daemon,
+                                ], function ($value) {
             return !is_null($value);
         });
-        return new Process(implode(" ",$command),null, null, null,null);
+        return new Process((array)implode(" ", $command), null, null, null, null);
     }
 
     /**
@@ -152,7 +153,7 @@ class Schedule extends Command
 
     /**
      * 检查内存是否超出
-     * @param  int $memoryLimit
+     * @param int $memoryLimit
      * @return bool
      */
     protected function memoryExceeded($memoryLimit)
@@ -177,18 +178,22 @@ class Schedule extends Command
     {
         if ($this->isWin()) {
             $command = 'wmic process where name="php.exe" get processid,CommandLine';
-            $process = new Process($command);
+            $process = Process::fromShellCommandline($command);
             $process->run();
             if (!$process->isSuccessful()) {
                 return false;
             }
-            foreach (explode("\n", trim($process->getOutput())) as $line) if (stripos($line, $this->getName()." start") !== false) {
-                list(, , , $pid) = explode(' ', preg_replace('|\s+|', ' ', $line));
-                if ($pid > 0) return $pid;
+            foreach (explode("\n", trim($process->getOutput())) as $line) {
+                if (stripos($line, $this->getName() . " start") !== false) {
+                    [, , , $pid] = explode(' ', preg_replace('|\s+|', ' ', $line));
+                    if ($pid > 0) {
+                        return $pid;
+                    }
+                }
             }
         } else {
             $command = "ps aux|grep -v grep|grep \"cron:schedule start\"| awk '{print $2}' |xargs";
-            $process = new Process($command);
+            $process = Process::fromShellCommandline($command);
             $process->run();
             if ($process->isSuccessful()) {
                 return trim($process->getOutput());
@@ -209,10 +214,10 @@ class Schedule extends Command
         } else {
             $command = "kill -9 {$pid}";
         }
-        $process = new Process($command);
+        $process = Process::fromShellCommandline($command);
         $process->run();
         if ($process->isSuccessful()) {
-            $this->app->cache->rm($this->getName());
+            $this->app->cache->delete($this->getName());
             return true;
         }
         return false;
