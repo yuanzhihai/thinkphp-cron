@@ -132,7 +132,7 @@ class Run extends Command
         $task->run();
         $this->taskData['status_desc'] = $task->statusDesc;
         $this->taskData['next_time']   = $task->NextRun($this->startedAt);
-        $this->taskData['last_time']   = $this->startedAt;
+        $this->taskData['last_time']   = $this->startedAt->format('Y-m-d H:i:s');
         $this->taskData['count']       = Db::raw('count+1');
         if ($this->type == 'mysql') {
             Db::table($this->config['table'])->update($this->taskData);
