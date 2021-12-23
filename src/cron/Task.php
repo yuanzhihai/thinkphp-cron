@@ -137,16 +137,17 @@ abstract class Task
     protected function createMutex()
     {
         $name = $this->mutexName();
-        if (!$this->cache->has($name)) {
-            $this->cache->set($name, true, $this->expiresAt);
-            return true;
-        }
-        return false;
+
+        return $this->cache->set($name, time(), $this->expiresAt);
     }
 
     protected function existsMutex()
     {
-        return $this->cache->has($this->mutexName());
+        if ($this->cache->has($this->mutexName())) {
+            $mutex = $this->cache->get($this->mutexName());
+            return $mutex + $this->expiresAt > time();
+        }
+        return false;
     }
 
     public function when(Closure $callback)
