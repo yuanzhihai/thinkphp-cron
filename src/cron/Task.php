@@ -39,12 +39,12 @@ abstract class Task
     /** @var Cache */
     protected $cache;
 
-    public function __construct($expression=false,Cache $cache)
+    public function __construct($expression = false,Cache $cache)
     {
         $this->cache = $cache;
-        if($expression){
-            $this->expression=$expression;
-        }else {
+        if ($expression) {
+            $this->expression = $expression;
+        } else {
             $this->configure();
         }
     }
@@ -55,18 +55,18 @@ abstract class Task
      */
     public function isDue()
     {
-        $date = Carbon::now($this->timezone);
+        $date = Carbon::now( $this->timezone );
 
-        return CronExpression::factory($this->expression)->isDue($date->toDateTimeString());
+        return CronExpression::factory( $this->expression )->isDue( $date->toDateTimeString() );
     }
 
     /**
      * 下一次执行
      * @return bool
      */
-    public function NextRun($datatime=null)
+    public function NextRun($datatime = null)
     {
-        return CronExpression::factory($this->expression)->getNextRunDate($datatime)->format('Y-m-d H:i:s');
+        return CronExpression::factory( $this->expression )->getNextRunDate( $datatime )->format( 'Y-m-d H:i:s' );
     }
 
     /**
@@ -89,9 +89,9 @@ abstract class Task
             return;
         }
 
-        register_shutdown_function(function () {
+        register_shutdown_function( function () {
             $this->removeMutex();
-        });
+        } );
 
         try {
             $this->execute();
@@ -106,14 +106,14 @@ abstract class Task
      */
     public function filtersPass()
     {
-        foreach ($this->filters as $callback) {
-            if (!call_user_func($callback)) {
+        foreach ( $this->filters as $callback ) {
+            if (!call_user_func( $callback )) {
                 return false;
             }
         }
 
-        foreach ($this->rejects as $callback) {
-            if (call_user_func($callback)) {
+        foreach ( $this->rejects as $callback ) {
+            if (call_user_func( $callback )) {
                 return false;
             }
         }
@@ -126,25 +126,25 @@ abstract class Task
      */
     public function mutexName()
     {
-        return 'task-' . sha1(static::class);
+        return 'task-'.sha1( static::class );
     }
 
     protected function removeMutex()
     {
-        return $this->cache->delete($this->mutexName());
+        return $this->cache->delete( $this->mutexName() );
     }
 
     protected function createMutex()
     {
         $name = $this->mutexName();
 
-        return $this->cache->set($name, time(), $this->expiresAt);
+        return $this->cache->set( $name,time(),$this->expiresAt );
     }
 
     protected function existsMutex()
     {
-        if ($this->cache->has($this->mutexName())) {
-            $mutex = $this->cache->get($this->mutexName());
+        if ($this->cache->has( $this->mutexName() )) {
+            $mutex = $this->cache->get( $this->mutexName() );
             return $mutex + $this->expiresAt > time();
         }
         return false;
@@ -170,9 +170,9 @@ abstract class Task
 
         $this->expiresAt = $expiresAt;
 
-        return $this->skip(function () {
+        return $this->skip( function () {
             return $this->existsMutex();
-        });
+        } );
     }
 
     public function onOneServer()
