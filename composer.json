@@ -9,9 +9,9 @@
         }
     ],
     "require": {
-        "topthink/framework": "^6",
+        "topthink/framework": ">=6.0",
         "dragonmantank/cron-expression": "^3.0",
-        "symfony/process": "^4.4|^5|^6",
+        "symfony/process": ">=4.4",
         "nesbot/carbon": "^2.28",
         "ext-json": "*"
     },
