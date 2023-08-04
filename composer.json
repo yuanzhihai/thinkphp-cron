@@ -1,6 +1,6 @@
 {
     "name": "yzh52521/thinkphp-cron",
-    "description": "thinkphp 计划任务",
+    "description": "thinkphp6 / thinkphp8  计划任务",
     "license": "Apache-2.0",
     "authors": [
         {
